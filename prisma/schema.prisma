@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  FREELANCER
+  ARBITRATOR
+}
+
+enum ContractStatus {
+  DRAFT
+  ESCROW_LOCKED
+  IN_PROGRESS
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  VERIFIED
+  PAID
+  DISPUTED
+}
+
+enum TransactionType {
+  DEPOSIT
+  ESCROW_HOLD
+  MILESTONE_RELEASE
+  REFUND
+}
+
+enum DisputeStatus {
+  NONE
+  RAISED
+  EVALUATING
+  RESOLVED_PARTIAL
+  RESOLVED_REFUND
+  RESOLVED_RELEASE
+}
+
+model User {
+  id              String      @id @default(cuid())
+  email           String      @unique
+  name            String
+  role            Role        @default(CLIENT)
+  paypalEmail     String?
+  avatar          String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  clientContracts Contract[]  @relation("ClientContracts")
+  devContracts    Contract[]  @relation("DevContracts")
+}
+
+model Contract {
+  id                String            @id @default(cuid())
+  title             String
+  description       String
+  category          String            @default("Software Development")
+  totalBudget       Float
+  currency          String            @default("USD")
+  status            ContractStatus    @default(DRAFT)
+  
+  // Security & Escrow identifiers
+  paypalOrderId     String?           @unique
+  paypalCaptureId   String?
+  escrowLockedAt    DateTime?
+  
+  clientId          String
+  client            User              @relation("ClientContracts", fields: [clientId], references: [id])
+  
+  freelancerId      String
+  freelancer        User              @relation("DevContracts", fields: [freelancerId], references: [id])
+  
+  milestones        Milestone[]
+  transactions      EscrowTransaction[]
+  disputes          Dispute[]
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Milestone {
+  id                   String            @id @default(cuid())
+  contractId           String
+  contract             Contract          @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  
+  title                String
+  description          String
+  amount               Float
+  orderIndex           Int
+  status               MilestoneStatus   @default(PENDING)
+  
+  // AI Criteria rubric (JSON formatted acceptance criteria)
+  acceptanceCriteria   String            @default("[]") // JSON string of criteria checks
+  
+  // Deliverable details submitted by freelancer
+  deliverableUrl       String?
+  deliverableNotes     String?
+  submissionHash       String?           // SHA256 of deliverable payload for tamper-proofing
+  submittedAt          DateTime?
+  
+  // Payment payout details
+  payoutBatchId        String?
+  payoutItemId         String?
+  paidAt               DateTime?
+  
+  audits               VerificationAudit[]
+  transactions         EscrowTransaction[]
+
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+}
+
+model VerificationAudit {
+  id                     String      @id @default(cuid())
+  milestoneId            String
+  milestone              Milestone   @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  
+  verifierModel          String      @default("gemini-2.5-flash")
+  score                  Int         // 0 - 100
+  passed                 Boolean     @default(false)
+  summary                String
+  criteriaResults        String      // JSON detailed evaluation of each criterion
+  antiHallucinationScore Float       @default(1.0)
+  riskLevel              String      @default("LOW") // LOW, MEDIUM, HIGH
+  rawAnalysis            String?
+  
+  createdAt              DateTime    @default(now())
+}
+
+model EscrowTransaction {
+  id                  String          @id @default(cuid())
+  contractId          String
+  contract            Contract        @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  milestoneId         String?
+  milestone           Milestone?      @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  
+  type                TransactionType
+  amount              Float
+  currency            String          @default("USD")
+  paypalRefId         String?
+  status              String          @default("COMPLETED")
+  metadataJson        String?
+  
+  createdAt           DateTime        @default(now())
+}
+
+model Dispute {
+  id              String         @id @default(cuid())
+  contractId      String
+  contract        Contract       @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  
+  reason          String
+  status          DisputeStatus  @default(RAISED)
+  clientClaim     String
+  devCounter      String?
+  aiResolution    String?        // Neutral AI synthesis & binding settlement recommendation
+  refundAmount    Float          @default(0.0)
+  releaseAmount   Float          @default(0.0)
+  
+  createdAt       DateTime       @default(now())
+  resolvedAt      DateTime?
+}
