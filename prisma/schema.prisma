@@ -174,3 +174,4 @@ model Dispute {
   createdAt       DateTime       @default(now())
   resolvedAt      DateTime?
 }
+

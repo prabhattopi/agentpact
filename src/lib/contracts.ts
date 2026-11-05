@@ -306,3 +306,4 @@ export async function listAllContracts() {
 
   return Array.from(inMemoryContracts.values());
 }
+

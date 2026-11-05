@@ -183,3 +183,4 @@ function generateMockContractPlan(requirements: string, budget: number): ScopedC
     ],
   };
 }
+

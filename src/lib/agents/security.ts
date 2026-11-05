@@ -128,3 +128,4 @@ export function verifyStateTransitionAllowed(params: StateMachineCheckParams): {
 
   return { allowed: true };
 }
+
