@@ -104,7 +104,7 @@ sequenceDiagram
 ## 🚀 Setup & Installation Guide
 
 ### Prerequisites
-- Node.js 18+ (tested on Node v22)
+- Node.js 20+ (tested on Node v22)
 - pnpm (or npm / yarn)
 
 ### 1. Clone & Install Dependencies
