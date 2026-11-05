@@ -149,7 +149,7 @@ export default function Home() {
         contractCount={contracts.length}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-28 space-y-3">
             <Loader2 className="w-8 h-8 animate-spin text-blue-500" />

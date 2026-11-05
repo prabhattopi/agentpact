@@ -1,9 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { MilestoneCard } from "./MilestoneCard";
 import { PayPalEscrowModal } from "./PayPalEscrowModal";
-import { ShieldCheck, Lock, Sparkles, Loader2 } from "lucide-react";
+import { MilestoneDrawer } from "./MilestoneDrawer";
+import {
+  ShieldCheck,
+  Lock,
+  Sparkles,
+  Loader2,
+  CheckCircle2,
+  Clock,
+  ArrowUpRight,
+  DollarSign,
+  AlertCircle,
+  FileCode2,
+} from "lucide-react";
 import { ActiveViewMode } from "./Navbar";
 
 interface DualViewContainerProps {
@@ -21,6 +32,8 @@ export function DualViewContainer({
 }: DualViewContainerProps) {
   const [fundingEscrow, setFundingEscrow] = useState(false);
   const [orderModalData, setOrderModalData] = useState<{ id: string; approveUrl?: string } | null>(null);
+  const [selectedMilestone, setSelectedMilestone] = useState<any>(null);
+  const [drawerRole, setDrawerRole] = useState<"CLIENT" | "FREELANCER">("FREELANCER");
 
   if (!contract) {
     return (
@@ -61,127 +74,202 @@ export function DualViewContainer({
     }
   };
 
+  const handleOpenMilestone = (m: any, role: "CLIENT" | "FREELANCER") => {
+    setSelectedMilestone(m);
+    setDrawerRole(role);
+  };
+
   const showClient = viewMode === "client" || viewMode === "split";
   const showFreelancer = viewMode === "freelancer" || viewMode === "split";
 
   return (
-    <div className="space-y-6">
-      {/* Contract Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-950 border border-zinc-800 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                {contract.category || "Fullstack Software"}
-              </span>
-              <span className="text-xs text-zinc-400 font-mono">ID: {contract.id}</span>
-            </div>
-            <h2 className="text-xl font-bold text-white tracking-tight">{contract.title}</h2>
-            <p className="text-xs text-zinc-400 max-w-3xl leading-relaxed">{contract.description}</p>
+    <div className="space-y-4">
+      {/* Compact Contract Executive Banner */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              {contract.category || "Fullstack Software"}
+            </span>
+            <span className="text-[11px] text-zinc-400 font-mono">ID: {contract.id}</span>
+          </div>
+          <h2 className="text-lg font-bold text-white tracking-tight">{contract.title}</h2>
+          <p className="text-xs text-zinc-400 max-w-2xl truncate">{contract.description}</p>
+        </div>
+
+        <div className="flex items-center gap-4 shrink-0">
+          <div className="text-right">
+            <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Total Escrow</span>
+            <span className="text-xl font-extrabold text-emerald-400 tracking-tight">
+              ${contract.totalBudget?.toLocaleString()} {contract.currency || "USD"}
+            </span>
           </div>
 
-          <div className="flex flex-col items-end gap-2 shrink-0">
-            <div className="text-right">
-              <span className="text-xs text-zinc-400 block">Total Escrow Budget</span>
-              <span className="text-2xl font-extrabold text-white tracking-tight">
-                ${contract.totalBudget?.toLocaleString()} {contract.currency || "USD"}
-              </span>
+          {/* Escrow Lock State */}
+          {isDraft ? (
+            <button
+              onClick={handleOpenEscrowFlow}
+              disabled={fundingEscrow}
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-95 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/25 cursor-pointer disabled:opacity-50"
+            >
+              {fundingEscrow ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Generating Order...
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3.5 h-3.5" />
+                  Authorize & Lock Escrow
+                </>
+              )}
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Funded in PayPal Escrow</span>
             </div>
-
-            {/* Escrow Lock State */}
-            {isDraft ? (
-              <button
-                onClick={handleOpenEscrowFlow}
-                disabled={fundingEscrow}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:opacity-95 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/25 cursor-pointer disabled:opacity-50"
-              >
-                {fundingEscrow ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating PayPal Order...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-3.5 h-3.5" />
-                    Authorize & Lock Escrow via PayPal
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Escrow Funded & Locked in PayPal Sandbox</span>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Synchronized Dual Perspective Container */}
+      {/* Synchronized Columns with Compact Drawer Triggers */}
       <div
-        className={`grid gap-6 ${
+        className={`grid gap-4 ${
           viewMode === "split" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
         }`}
       >
         {/* Left Column: Client Role View */}
         {showClient && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between bg-zinc-900/60 p-3 rounded-xl border border-zinc-800">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between bg-zinc-900/60 px-3.5 py-2.5 rounded-xl border border-zinc-800 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-                <span className="text-xs font-bold text-white tracking-wide">
+                <span className="font-bold text-white tracking-wide">
                   CLIENT VIEW — {contract.client?.name || "Enterprise Sponsor"}
                 </span>
               </div>
-              <span className="text-[11px] text-zinc-400 font-mono">
-                {contract.client?.email || "client@sandbox.paypal.com"}
-              </span>
+              <span className="text-zinc-500 font-mono text-[11px]">{contract.client?.email}</span>
             </div>
 
-            <div className="space-y-4">
-              {(contract.milestones || []).map((m: any) => (
-                <MilestoneCard
-                  key={m.id}
-                  milestone={m}
-                  contract={contract}
-                  userRole="CLIENT"
-                  onUpdated={onContractUpdated}
-                  onRaiseDispute={onRaiseDispute}
-                />
-              ))}
+            <div className="space-y-2.5">
+              {(contract.milestones || []).map((m: any) => {
+                const isPaid = m.status === "PAID";
+                const isSubmitted = m.status === "SUBMITTED";
+
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => handleOpenMilestone(m, "CLIENT")}
+                    className="p-3.5 rounded-xl bg-zinc-900/70 border border-zinc-800 hover:border-blue-500/40 hover:bg-zinc-850 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">
+                          M#{m.orderIndex}
+                        </span>
+                        <span className="text-xs font-semibold text-white truncate">{m.title}</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-400 truncate">{m.description}</p>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {isPaid ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Paid
+                        </span>
+                      ) : isSubmitted ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          Reviewing
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">
+                          Pending
+                        </span>
+                      )}
+
+                      <span className="text-xs font-bold text-zinc-200">${m.amount} USD</span>
+                      <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-blue-400 transition-colors" />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* Right Column: Freelancer Role View */}
         {showFreelancer && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between bg-zinc-900/60 p-3 rounded-xl border border-zinc-800">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between bg-zinc-900/60 px-3.5 py-2.5 rounded-xl border border-zinc-800 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-indigo-500"></div>
-                <span className="text-xs font-bold text-white tracking-wide">
+                <span className="font-bold text-white tracking-wide">
                   FREELANCER VIEW — {contract.freelancer?.name || "AI Dev Agent"}
                 </span>
               </div>
-              <span className="text-[11px] text-blue-400 font-mono">
-                Payout Recipient: {contract.freelancer?.paypalEmail || contract.freelancer?.email}
+              <span className="text-blue-400 font-mono text-[11px]">
+                {contract.freelancer?.paypalEmail || contract.freelancer?.email}
               </span>
             </div>
 
-            <div className="space-y-4">
-              {(contract.milestones || []).map((m: any) => (
-                <MilestoneCard
-                  key={m.id}
-                  milestone={m}
-                  contract={contract}
-                  userRole="FREELANCER"
-                  onUpdated={onContractUpdated}
-                />
-              ))}
+            <div className="space-y-2.5">
+              {(contract.milestones || []).map((m: any) => {
+                const isPaid = m.status === "PAID";
+                const isSubmitted = m.status === "SUBMITTED";
+
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => handleOpenMilestone(m, "FREELANCER")}
+                    className="p-3.5 rounded-xl bg-zinc-900/70 border border-zinc-800 hover:border-indigo-500/40 hover:bg-zinc-850 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400">
+                          M#{m.orderIndex}
+                        </span>
+                        <span className="text-xs font-semibold text-white truncate">{m.title}</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-400 truncate">{m.description}</p>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {isPaid ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Settled
+                        </span>
+                      ) : isSubmitted ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                          Audit Ready
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">
+                          Submit Work
+                        </span>
+                      )}
+
+                      <span className="text-xs font-bold text-emerald-400">${m.amount} USD</span>
+                      <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-indigo-400 transition-colors" />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
+
+      {/* Slide-over Inspection Drawer */}
+      <MilestoneDrawer
+        isOpen={Boolean(selectedMilestone)}
+        onClose={() => setSelectedMilestone(null)}
+        milestone={selectedMilestone}
+        contract={contract}
+        activeRole={drawerRole}
+        onUpdated={onContractUpdated}
+        onRaiseDispute={onRaiseDispute}
+      />
 
       {/* PayPal Escrow Authorization Modal */}
       <PayPalEscrowModal
