@@ -136,7 +136,11 @@ export default function Home() {
     }
   };
 
+  const initialFetchDone = React.useRef(false);
+
   useEffect(() => {
+    if (initialFetchDone.current) return;
+    initialFetchDone.current = true;
     fetchContracts();
   }, []);
 
