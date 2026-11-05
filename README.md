@@ -12,8 +12,7 @@
 [![Neon Postgres](https://img.shields.io/badge/Neon-Serverless%20Postgres-00E599?style=for-the-badge&logo=postgresql&logoColor=black)](https://neon.tech)
 [![Next.js](https://img.shields.io/badge/Next.js-16%20%7C%20React%2019-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 
-*Built for the **PayPal AI Hackathon 2026***  
-*Target Tracks: Best Use of Agentic Commerce ($5k) • Best Use of AG Grid ($5k) • Best Use of PayPal + AI ($5k) • Overall Grand Prize ($12k)*
+*Built for the **PayPal AI Hackathon 2026***
 
 </div>
 
