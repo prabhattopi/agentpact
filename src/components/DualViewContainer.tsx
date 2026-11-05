@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { MilestoneCard } from "./MilestoneCard";
-import { ShieldCheck, CreditCard, Lock, Sparkles, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { PayPalEscrowModal } from "./PayPalEscrowModal";
+import { ShieldCheck, Lock, Sparkles, Loader2 } from "lucide-react";
 import { ActiveViewMode } from "./Navbar";
 
 interface DualViewContainerProps {
@@ -19,6 +20,7 @@ export function DualViewContainer({
   onRaiseDispute,
 }: DualViewContainerProps) {
   const [fundingEscrow, setFundingEscrow] = useState(false);
+  const [orderModalData, setOrderModalData] = useState<{ id: string; approveUrl?: string } | null>(null);
 
   if (!contract) {
     return (
@@ -35,11 +37,10 @@ export function DualViewContainer({
   const isDraft = contract.status === "DRAFT";
   const isEscrowLocked = contract.status === "ESCROW_LOCKED" || contract.status === "IN_PROGRESS";
 
-  // Lock funds into PayPal Escrow
-  const handleLockEscrow = async () => {
+  // Initiate PayPal Escrow Order Creation
+  const handleOpenEscrowFlow = async () => {
     setFundingEscrow(true);
     try {
-      // Step 1: Create Order
       const orderRes = await fetch("/api/escrow/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,18 +49,13 @@ export function DualViewContainer({
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error);
 
-      // Step 2: Capture / Lock in Escrow
-      const captureRes = await fetch("/api/escrow/capture", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contractId: contract.id, orderId: orderData.id }),
+      // Open PayPal Authorization Modal
+      setOrderModalData({
+        id: orderData.id,
+        approveUrl: orderData.approveUrl,
       });
-      const captureData = await captureRes.json();
-      if (!captureRes.ok) throw new Error(captureData.error);
-
-      onContractUpdated();
     } catch (err: any) {
-      alert("Failed to lock escrow: " + err.message);
+      alert("Failed to create PayPal escrow order: " + err.message);
     } finally {
       setFundingEscrow(false);
     }
@@ -95,14 +91,14 @@ export function DualViewContainer({
             {/* Escrow Lock State */}
             {isDraft ? (
               <button
-                onClick={handleLockEscrow}
+                onClick={handleOpenEscrowFlow}
                 disabled={fundingEscrow}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:opacity-95 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/25 cursor-pointer disabled:opacity-50"
               >
                 {fundingEscrow ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Locking in PayPal Escrow...
+                    Generating PayPal Order...
                   </>
                 ) : (
                   <>
@@ -186,7 +182,15 @@ export function DualViewContainer({
           </div>
         )}
       </div>
+
+      {/* PayPal Escrow Authorization Modal */}
+      <PayPalEscrowModal
+        isOpen={Boolean(orderModalData)}
+        onClose={() => setOrderModalData(null)}
+        contract={contract}
+        orderData={orderModalData}
+        onEscrowLocked={onContractUpdated}
+      />
     </div>
   );
 }
-

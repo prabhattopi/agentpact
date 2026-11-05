@@ -152,6 +152,7 @@ export function AGGridEscrowLedger({
         field: "milestones",
         flex: 1.5,
         minWidth: 140,
+        cellDataType: false,
         cellRenderer: (params: any) => {
           const milestones = params.value || [];
           const paidCount = milestones.filter((m: any) => m.status === "PAID").length;
@@ -268,6 +269,7 @@ export function AGGridEscrowLedger({
           quickFilterText={quickFilterText}
           pagination={true}
           paginationPageSize={10}
+          paginationPageSizeSelector={[10, 20, 50]}
           defaultColDef={{
             sortable: true,
             filter: true,
