@@ -19,8 +19,8 @@ export function ContractScoperModal({
     "Build a production Next.js 16 analytics dashboard with AG Grid data tables, PayPal Escrow webhook integration, and automated Jest test coverage exceeding 85%."
   );
   const [budget, setBudget] = useState(1500);
-  const [freelancerEmail, setFreelancerEmail] = useState("freelancer-dev@sandbox.paypal.com");
-  const [freelancerName, setFreelancerName] = useState("Alex Rivers (AI Engineer)");
+  const [freelancerEmail, setFreelancerEmail] = useState("solodev@sandbox.paypal.com");
+  const [freelancerName, setFreelancerName] = useState("Devin Vance (Senior Agent Architect)");
   
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
