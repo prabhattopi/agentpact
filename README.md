@@ -28,30 +28,87 @@ Freelance marketplaces (Upwork, Escrow.com) charge **10%–20% in intermediary c
 **AgentPact** bridges this trust deficit using an autonomous multi-agent protocol backed by **PayPal REST APIs (Orders v2 + Payouts v1)**, **Gemini 2.5 Flash**, and **AG Grid Enterprise**:
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Client as 👤 Client / Sponsor
-    participant Scoper as 🤖 Gemini Scoper Agent
-    participant PayPal as 💳 PayPal Orders v2 (Escrow Hold)
-    participant AG as 📊 AG Grid Command Center
-    participant Verifier as 🧠 Gemini Verifier Agent
-    actor Dev as 👨‍💻 Freelancer / AI Worker
-    participant Payout as ⚡ PayPal Payouts v1 (Instant Release)
-
-    Client->>Scoper: Submit Project Specs / PRD
-    Scoper-->>Client: Generates Weighted Acceptance Criteria Rubric
-    Client->>PayPal: Authorize & Lock Escrow Funds (Orders v2)
-    PayPal-->>AG: Log Escrow State in Real-Time Grid
-    Dev->>Verifier: Submit Deliverables (GitHub PR / Notes / Diff)
-    Verifier->>Verifier: Run Autonomous Audit with Anti-Hallucination Checks
-    alt Audit Passes (Score >= 80)
-        Verifier->>Payout: Trigger Instant Programmatic Release (Payouts v1)
-        Payout-->>Dev: Funds Dispatched Instantly to PayPal Account
-        Payout-->>AG: Update Escrow Status to 'PAID'
-    else Dispute Raised
-        Client->>Verifier: Trigger AI Arbitration (Binding Settlement Split)
+flowchart TD
+    subgraph S1 ["1️⃣ AI Contract Architecture"]
+        A["👤 Client / Sponsor Prompt"] -->|Analyze Specs| B["🤖 Gemini 2.5 Flash Scoper"]
+        B -->|Synthesize| C["📋 Objective Milestone Rubrics<br/>(Weighted Points & Acceptance Criteria)"]
     end
+
+    subgraph S2 ["2️⃣ Trustless Escrow Hold"]
+        C -->|Authorize Funds| D["💳 PayPal Orders v2 Checkout"]
+        D -->|Capture & Lock| E["🔒 PayPal Smart Escrow Vault<br/>(Buyer Funds Secured • Zero Default Risk)"]
+        E -->|Telemetry Update| F["📊 AG Grid Enterprise Ledger"]
+    end
+
+    subgraph S3 ["3️⃣ Autonomous Verification"]
+        G["👨‍💻 Freelancer submits Deliverable<br/>(GitHub PR + Code Diff + Tests)"] -->|Cryptographic SHA-256| H["🧠 Gemini 2.5 Flash Verifier"]
+        H -->|Strict Audit against Rubric| I{"Audit Score >= 80%?"}
+    end
+
+    subgraph S4 ["4️⃣ Instant Programmatic Settlement"]
+        I -->|✅ PASS| J["⚡ PayPal Payouts v1 API"]
+        J -->|Instant Direct Deposit| K["💰 Freelancer PayPal Wallet<br/>(Zero 14-Day Delay • Zero 20% Fee)"]
+    end
+
+    subgraph S5 ["5️⃣ Autonomous Dispute Arbitration"]
+        I -->|❌ FAIL or Grievance| L["⚖️ Gemini Neutral Arbitrator"]
+        L -->|Evidence-Based Point Audit| M["⚖️ Pro-Rata Binding Split"]
+        M -->|Refund Protection| N["↩️ Client PayPal Account"]
+        M -->|Partial Settlement| O["💰 Freelancer PayPal Wallet"]
+    end
+
+    E -.-> G
 ```
+
+---
+
+## 📖 How AgentPact Works: The Complete Lifecycle
+
+### 🎯 Step 1: Why AI Scopes the Task?
+> **The Problem:** In traditional freelancing, clients give vague requests like *"Build me an analytics dashboard"*. The developer builds a basic prototype; the client says *"This is junk, I won't pay"*; the developer argues *"You never asked for tests or WebSockets!"*  
+> **The AgentPact Solution:** Before a single dollar moves, **Gemini 2.5 Flash** analyzes the client's PRD and decomposes it into **mathematically weighted milestones** with objective criteria (e.g., Jest test coverage $> 85\%$, database foreign key constraints, API endpoint uptime). Both parties agree to unambiguous rules upfront!
+
+### 🔒 Step 2: Why Does the Buyer Lock Funds in PayPal Escrow?
+> **The Problem:** Developers fear doing 3 weeks of intensive coding only to be ghosted or denied payment.  
+> **The AgentPact Solution:** The Buyer approves the milestone contract through **PayPal Orders v2** (`intent: CAPTURE`). The money is deducted from the Buyer's account and locked securely in the PayPal Escrow hold.  
+> **Crucial Rule:** The funds do **NOT** go into the developer's pocket yet. They remain protected in escrow, giving the developer 100% confidence to work while ensuring the buyer maintains full financial leverage.
+
+### 🧠 Step 3: What Does AgentPact Do in the Middle?
+> AgentPact acts as an **autonomous, impartial referee**:
+> 1. When the developer completes work, they submit their PR link, code diff, and implementation notes.
+> 2. The deliverable is cryptographically hashed with SHA-256.
+> 3. **Gemini 2.5 Flash Verifier** runs a multi-criteria audit. It strictly checks whether evidence exists for each criterion. If evidence is missing, the AI penalizes the score (preventing rubber-stamp approvals).
+
+### ⚡ Step 4: How Does the Freelancer Get Paid Instantly?
+> Once Gemini certifies a passing score ($\ge 80\%$), the secure state machine unlocks the escrow.  
+> AgentPact directly invokes the **PayPal Payouts v1 API** (`POST /v1/payments/payouts: 201 OK`). Funds are deposited **instantly** into the developer's PayPal wallet with zero platform intermediary delays and zero 20% commission!
+
+### ⚖️ Step 5: What if the Deliverable is Incomplete or Disputed? (Buyer Protection)
+> **The Problem:** What if a developer submits half-finished work or tests fail?  
+> **The AgentPact Solution:** The client clicks **"Raise Dispute"**.  
+> 1. The escrow funds remain locked.  
+> 2. **Gemini 2.5 Flash Arbitrator** audits the grievance vs. the counter-claim against the original weighted criteria points (e.g., awarding 7 out of 21 points for partial schema work).  
+> 3. It calculates an equitable **pro-rata binding settlement** (e.g., **$261.90 Refunded to Client**, **$238.10 Released to Freelancer**).  
+> 4. Clicking **"Execute Binding Settlement"** dispatches the PayPal payout and refund automatically! **The Buyer's funds are 100% safeguarded against unfinished work.**
+
+---
+
+## 🔎 How to Verify Deductions & Payouts in PayPal Sandbox
+
+You can verify every single transaction in real-time inside your PayPal Sandbox environment:
+
+1. **PayPal API Real-Time Logs** (`developer.paypal.com/dashboard/applications/sandbox`):
+   - Under your **AgentPact-US** app, click **"API Calls"** to inspect:
+     - `POST /v2/checkout/orders/.../capture` ➔ **`201 OK`** (Escrow Capture)
+     - `POST /v1/payments/payouts` ➔ **`201 OK`** (Instant Milestone Payout)
+2. **Buyer Sandbox Account Balance** (`developer.paypal.com/dashboard/accounts`):
+   - Log into `https://sandbox.paypal.com` with your **Buyer Sandbox credentials**.
+   - Under **Recent Activity**, you will see:
+     `- $1,500.00 USD` (Escrow Payment to AgentPact).
+3. **Freelancer Sandbox Account Balance**:
+   - Log into `https://sandbox.paypal.com` with your **Freelancer Sandbox credentials** (`freelancer-dev@sandbox.paypal.com` or `solodev@sandbox.paypal.com`).
+   - Under **Recent Activity**, you will see:
+     `+ $500.00 USD` (Payout from AgentPact / Instant Milestone Release).
 
 ---
 

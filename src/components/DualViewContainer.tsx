@@ -156,6 +156,7 @@ export function DualViewContainer({
               {(contract.milestones || []).map((m: any) => {
                 const isPaid = m.status === "PAID";
                 const isSubmitted = m.status === "SUBMITTED";
+                const isDisputed = m.status === "DISPUTED";
 
                 return (
                   <div
@@ -174,7 +175,11 @@ export function DualViewContainer({
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      {isPaid ? (
+                      {isDisputed ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                          ⚖️ Arbitrated
+                        </span>
+                      ) : isPaid ? (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           Paid
                         </span>
@@ -217,6 +222,7 @@ export function DualViewContainer({
               {(contract.milestones || []).map((m: any) => {
                 const isPaid = m.status === "PAID";
                 const isSubmitted = m.status === "SUBMITTED";
+                const isDisputed = m.status === "DISPUTED";
 
                 return (
                   <div
@@ -235,7 +241,11 @@ export function DualViewContainer({
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      {isPaid ? (
+                      {isDisputed ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                          ⚖️ Settled (Split)
+                        </span>
+                      ) : isPaid ? (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           Settled
                         </span>

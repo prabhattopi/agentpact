@@ -26,6 +26,9 @@ export function DisputeModal({
   );
   const [arbitrating, setArbitrating] = useState(false);
   const [resolution, setResolution] = useState<any>(null);
+  const [executing, setExecuting] = useState(false);
+  const [executed, setExecuted] = useState(false);
+  const [executionResult, setExecutionResult] = useState<any>(null);
 
   if (!isOpen || !milestone) return null;
 
@@ -49,6 +52,34 @@ export function DisputeModal({
       alert("Arbitration failed: " + err.message);
     } finally {
       setArbitrating(false);
+    }
+  };
+
+  const handleExecuteSettlement = async () => {
+    if (!resolution) return;
+    setExecuting(true);
+    try {
+      const res = await fetch("/api/disputes/arbitrate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractId: contract.id,
+          milestoneId: milestone.id,
+          clientReason,
+          devCounter,
+          resolution,
+          executeSettlement: true,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setExecuted(true);
+      setExecutionResult(data);
+      onResolved();
+    } catch (err: any) {
+      alert("Execution failed: " + err.message);
+    } finally {
+      setExecuting(false);
     }
   };
 
@@ -174,15 +205,58 @@ export function DisputeModal({
                 </div>
               )}
 
-              <button
-                onClick={() => {
-                  onResolved();
-                  onClose();
-                }}
-                className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium rounded-xl transition-colors cursor-pointer"
-              >
-                Close & Return to Dashboard
-              </button>
+              {/* Action Buttons */}
+              {!executed ? (
+                <div className="space-y-2 pt-2">
+                  <button
+                    onClick={handleExecuteSettlement}
+                    disabled={executing}
+                    className="w-full py-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:opacity-95 text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer"
+                  >
+                    {executing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Dispatching PayPal Settlement Payout (${resolution.releaseAmount} USD)...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Execute Binding Settlement via PayPal (${resolution.releaseAmount} to Dev, ${resolution.refundAmount} to Client)
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onResolved();
+                      onClose();
+                    }}
+                    className="w-full py-2 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded-xl transition-colors cursor-pointer"
+                  >
+                    Close Without Executing
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3 pt-2">
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs text-center space-y-1">
+                    <p className="font-semibold">✅ Binding Dispute Settlement Executed & Recorded!</p>
+                    {executionResult?.payoutBatchId && (
+                      <p className="text-[10px] font-mono text-zinc-400">
+                        PayPal Payout Batch ID: {executionResult.payoutBatchId}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      onResolved();
+                      onClose();
+                    }}
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shadow-lg shadow-blue-500/20"
+                  >
+                    Return to Dashboard
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

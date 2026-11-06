@@ -296,6 +296,7 @@ export async function listAllContracts() {
           freelancer: true,
           milestones: true,
           transactions: true,
+          disputes: true,
         },
         orderBy: { createdAt: "desc" },
       });
@@ -305,5 +306,87 @@ export async function listAllContracts() {
   }
 
   return Array.from(inMemoryContracts.values());
+}
+
+export async function resolveMilestoneDispute(params: {
+  contractId: string;
+  milestoneId: string;
+  clientReason: string;
+  devCounter?: string;
+  resolution: {
+    decision: string;
+    refundAmount: number;
+    releaseAmount: number;
+    analysis: string;
+    bindingTerms: string[];
+    confidenceScore: number;
+  };
+  payoutBatchId?: string;
+}) {
+  const isDbAvailable = Boolean(process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("ep-cool-sample"));
+
+  if (isDbAvailable) {
+    try {
+      // 1. Update milestone status
+      await prisma.milestone.update({
+        where: { id: params.milestoneId },
+        data: {
+          status: "DISPUTED",
+          payoutBatchId: params.payoutBatchId || null,
+        },
+      });
+
+      // 2. Create Dispute record
+      const dispute = await prisma.dispute.create({
+        data: {
+          contractId: params.contractId,
+          reason: params.clientReason,
+          status:
+            params.resolution.decision === "REFUND_ALL"
+              ? "RESOLVED_REFUND"
+              : params.resolution.decision === "RELEASE_ALL"
+              ? "RESOLVED_RELEASE"
+              : "RESOLVED_PARTIAL",
+          clientClaim: params.clientReason,
+          devCounter: params.devCounter,
+          aiResolution: JSON.stringify(params.resolution),
+          refundAmount: params.resolution.refundAmount,
+          releaseAmount: params.resolution.releaseAmount,
+          resolvedAt: new Date(),
+        },
+      });
+
+      return dispute;
+    } catch (err) {
+      console.warn("[ContractsRepo] DB dispute resolution failed:", err);
+    }
+  }
+
+  // In-memory update
+  for (const contract of inMemoryContracts.values()) {
+    const ms = contract.milestones?.find((m: any) => m.id === params.milestoneId);
+    if (ms) {
+      ms.status = "DISPUTED";
+      ms.payoutBatchId = params.payoutBatchId || null;
+      ms.disputeResolution = params.resolution;
+
+      const dispute = {
+        id: `disp_${Date.now()}`,
+        contractId: params.contractId,
+        reason: params.clientReason,
+        status: params.resolution.decision,
+        clientClaim: params.clientReason,
+        devCounter: params.devCounter,
+        aiResolution: JSON.stringify(params.resolution),
+        refundAmount: params.resolution.refundAmount,
+        releaseAmount: params.resolution.releaseAmount,
+        resolvedAt: new Date(),
+      };
+      contract.disputes = contract.disputes || [];
+      contract.disputes.push(dispute);
+      return dispute;
+    }
+  }
+  return null;
 }
 
