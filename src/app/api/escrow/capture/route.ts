@@ -44,6 +44,18 @@ export async function POST(req: Request) {
         contract: updated,
       });
     } catch (captureErr: any) {
+      if (captureErr.message?.includes("ORDER_ALREADY_CAPTURED")) {
+        const updated = await updateContractStatus(contract.id, "ESCROW_LOCKED", {
+          paypalOrderId: targetOrderId,
+        });
+        return NextResponse.json({
+          success: true,
+          captureId: targetOrderId,
+          contract: updated,
+          alreadyCaptured: true,
+        });
+      }
+
       if (captureErr.message?.includes("ORDER_NOT_APPROVED")) {
         return NextResponse.json(
           {

@@ -26,7 +26,13 @@ export default function Home() {
       
       if (Array.isArray(data) && data.length > 0) {
         setContracts(data);
-        if (!selectedContract) {
+        const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const targetId = urlParams?.get("contractId");
+        const found = targetId ? data.find((c: any) => c.id === targetId) : null;
+
+        if (found) {
+          setSelectedContract(found);
+        } else if (!selectedContract) {
           setSelectedContract(data[0]);
         } else {
           const refreshed = data.find((c: any) => c.id === selectedContract.id);
