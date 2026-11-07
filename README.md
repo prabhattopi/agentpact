@@ -4,13 +4,20 @@
 
 ![AgentPact Hackathon Banner](./public/thumbnail.jpg)
 
-**Autonomous Multi-Agent Milestone Escrow & Instant Payout Rails powered by PayPal REST APIs & Google Gemini 2.5 Flash**
+### **Autonomous Multi-Agent Milestone Escrow & Instant Payout Rails**
+*Powered by PayPal REST APIs (Orders v2 + Payouts v1), Google Gemini 2.5 Flash, and AG Grid Enterprise*
 
 [![PayPal REST APIs](https://img.shields.io/badge/PayPal-Orders%20v2%20%7C%20Payouts%20v1-003087?style=for-the-badge&logo=paypal&logoColor=white)](https://developer.paypal.com)
 [![Google Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com)
 [![AG Grid](https://img.shields.io/badge/AG%20Grid-v33%20Enterprise%20Ledger-E02424?style=for-the-badge&logo=grid&logoColor=white)](https://www.ag-grid.com)
 [![Neon Postgres](https://img.shields.io/badge/Neon-Serverless%20Postgres-00E599?style=for-the-badge&logo=postgresql&logoColor=black)](https://neon.tech)
 [![Next.js](https://img.shields.io/badge/Next.js-16%20%7C%20React%2019-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+
+<p align="center">
+  <a href="https://agentpact-six.vercel.app"><b>🌐 Live Production Web App</b></a> &nbsp;•&nbsp;
+  <a href="https://github.com/prabhattopi/agentpact"><b>📂 GitHub Repository</b></a> &nbsp;•&nbsp;
+  <a href="#-end-to-end-testing-walkthrough"><b>🧪 Interactive Testing Guide</b></a>
+</p>
 
 *Built for the **PayPal AI Hackathon 2026***
 
