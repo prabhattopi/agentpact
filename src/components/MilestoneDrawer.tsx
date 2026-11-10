@@ -50,6 +50,19 @@ export function MilestoneDrawer({
     milestone?.audits && milestone.audits.length > 0 ? milestone.audits[0] : null
   );
 
+  // Sync drawer state when switching between different milestones
+  React.useEffect(() => {
+    if (milestone) {
+      setDeliverableUrl(milestone.deliverableUrl || "");
+      setDeliverableNotes(milestone.deliverableNotes || "");
+      setCodeDiff("");
+      setLatestAudit(
+        milestone.audits && milestone.audits.length > 0 ? milestone.audits[0] : null
+      );
+      setActiveTab("audit");
+    }
+  }, [milestone?.id]);
+
   if (!isOpen || !milestone) return null;
 
   let criteria: any[] = [];

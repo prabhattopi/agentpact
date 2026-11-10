@@ -272,6 +272,7 @@ export function DualViewContainer({
 
       {/* Slide-over Inspection Drawer */}
       <MilestoneDrawer
+        key={selectedMilestone?.id || "drawer"}
         isOpen={Boolean(selectedMilestone)}
         onClose={() => setSelectedMilestone(null)}
         milestone={selectedMilestone}
