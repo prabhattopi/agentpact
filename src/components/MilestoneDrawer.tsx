@@ -15,6 +15,7 @@ import {
   FileCheck,
   ChevronRight,
   AlertTriangle,
+  Scale,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -61,6 +62,7 @@ export function MilestoneDrawer({
   const isEscrowLocked = contract?.status === "ESCROW_LOCKED" || contract?.status === "IN_PROGRESS";
   const isPaid = milestone.status === "PAID";
   const isSubmitted = milestone.status === "SUBMITTED";
+  const isDisputed = milestone.status === "DISPUTED";
 
   // Step 1: Submit Work
   const handleSubmitWork = async () => {
@@ -150,7 +152,11 @@ export function MilestoneDrawer({
               <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">
                 Milestone #{milestone.orderIndex}
               </span>
-              {isPaid ? (
+              {isDisputed ? (
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center gap-1">
+                  <Scale className="w-3 h-3" /> Arbitrated Settlement
+                </span>
+              ) : isPaid ? (
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> Paid via PayPal
                 </span>
@@ -313,7 +319,7 @@ export function MilestoneDrawer({
                   )}
                 </button>
 
-                {activeRole === "CLIENT" && !isPaid && (
+                {activeRole === "CLIENT" && !isPaid && !isDisputed && (
                   <button
                     onClick={() => {
                       onRaiseDispute(milestone);
@@ -403,7 +409,22 @@ export function MilestoneDrawer({
                 </div>
               </div>
 
-              {isPaid ? (
+              {isDisputed ? (
+                <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs space-y-2">
+                  <div className="flex items-center gap-2 text-purple-400 font-bold">
+                    <Scale className="w-4 h-4" />
+                    <span>Settled via Autonomous AI Arbitration</span>
+                  </div>
+                  <p className="text-zinc-300">
+                    Dispute resolved with binding pro-rata monetary split. Payout dispatched via PayPal Payouts API.
+                  </p>
+                  {milestone.payoutBatchId && (
+                    <p className="text-zinc-400 font-mono text-[11px] pt-1 border-t border-purple-500/20">
+                      PayPal Batch ID: <span className="text-white">{milestone.payoutBatchId}</span>
+                    </p>
+                  )}
+                </div>
+              ) : isPaid ? (
                 <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-2">
                   <div className="flex items-center gap-2 text-emerald-400 font-bold">
                     <CheckCircle2 className="w-4 h-4" />
